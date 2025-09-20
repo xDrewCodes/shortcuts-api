@@ -4,30 +4,35 @@ export default async function handler(req, res) {
   }
 
   function getOrdinal(n) {
-    const s = ["th", "st", "nd", "rd"]
-    const v = n % 100
-    return n + (s[(v - 20) % 10] || s[v] || s[0])
-  }
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
 
-  function formatDate(date) {
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ]
+function formatDateEST(date) {
+    const options = {
+        timeZone: 'America/New_York',
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+    };
 
-    const dayOfWeek = days[date.getDay()]
-    const month = months[date.getMonth()]
-    const day = getOrdinal(date.getDate())
-    const year = date.getFullYear()
+    const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(date);
+    const partMap = Object.fromEntries(parts.map(p => [p.type, p.value]));
 
-    const hours = date.getHours().toString().padStart(2, '0')
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-    const seconds = date.getSeconds().toString().padStart(2, '0')
+    const day = getOrdinal(parseInt(partMap.day));
+    const formatted = `${partMap.weekday} ${partMap.month} ${day} ${partMap.year}, ${partMap.hour}:${partMap.minute}:${partMap.second}`;
+    return formatted;
+}
 
-    return `${dayOfWeek} ${month} ${day} ${year}, ${hours}:${minutes}:${seconds}`
-  }
-  const currentTime = formatDate(new Date())
+// Example usage:
+const currentTime = new Date()
+
 
 
   return res.status(200).json({
